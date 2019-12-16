@@ -14,6 +14,7 @@ gameMemory = {
         'mitten',
         'santa',
     ],
+    arrOpenCards: [],
     renderGrid: function (dimension) {
         let randArrayCard = this.cardVariant.concat(this.cardVariant).sort(function () {
             return Math.random() - 0.5;
@@ -42,36 +43,53 @@ gameMemory = {
             return false;
         }
 
+        if(this.arrOpenCards.includes('card_' + row + col))
+        {
+            return false;
+        }
+
+        this.arrOpenCards.push('card_' + row + col);
         this.step++;
+
+
         if (this.step > 2) { // Предыдущий ход не завершен
             return false;
         }
-        this.openCard(card);
-        if (this.step == 2) {
+        if (this.openCard(card) && this.step == 2) {
             this.checkHit();
         }
     },
     openCard: function (card) {
-        let cardVal = card.dataset.value;
-        card.style.background = 'url(images/' + cardVal + '.png)';
-        card.classList.add('opened');
+        try{
+            let cardVal = card.dataset.value;
+            card.style.background = 'url(images/' + cardVal + '.png)';
+            card.classList.add('opened');
+            return true;
+        }
+        catch{
+            return false;
+        }
     },
     checkHit: function () {
         setTimeout(() => {
+
             let openCards = document.getElementsByClassName('opened');
-
-            if (openCards[0].dataset.value === openCards[1].dataset.value) {
-                openCards[1].parentNode.remove();
-                openCards[0].parentNode.remove();
-            } else {
-                for (i = openCards.length - 1; i >= 0; i--) {
-                    openCards[i].style.background = 'url(images/back2.png)';
-                    openCards[i].classList.remove('opened');
+            if (openCards.length === 2)
+            {
+                if (openCards[0].dataset.value === openCards[1].dataset.value) {
+                    openCards[1].parentNode.remove();
+                    openCards[0].parentNode.remove();
+                } else {
+                    for (i = openCards.length - 1; i >= 0; i--) {
+                        openCards[i].style.background = 'url(images/back2.png)';
+                        openCards[i].classList.remove('opened');
+                    }
                 }
-            }
 
-            this.checkWin();
-            this.step = 0;
+                this.checkWin();
+                this.step = 0;
+                this.arrOpenCards = [];
+            }
         }, 700);
     },
     checkWin: function () {
